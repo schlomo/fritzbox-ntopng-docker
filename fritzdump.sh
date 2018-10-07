@@ -49,5 +49,7 @@ trap "rm -f $FIFO" EXIT
 curl --insecure --silent --no-buffer --output $FIFO \
 "$FRITZBOX_IP/cgi-bin/capture_notimeout?ifaceorminor=$FRITZBOX_INTERFACE&snaplen=&capture=Start&sid=$SID" &
 
+# I didn't manage to connect the curl and the docker directly so that the data would stream into ntopng. The FIFO is my workaround.
+
 docker run --name ntopng --dns $FRITZBOX_IP -v $FIFO:/tmp/fritz.fifo --rm -p 3000:3000 schlomo/ntopng-docker \
   --community --dns 1 --local-networks $FRITZBOX_IP/24 --disable-login 1 --shutdown-when-done --interface /tmp/fritz.fifo "$@"
