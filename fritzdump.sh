@@ -48,7 +48,7 @@ FIFO=$(mktemp -u -t ${0##*/}.fifo.XXXXXXXXXXXXXXX)
 mkfifo $FIFO
 trap "rm -f $FIFO" EXIT
 
-{ sleep 3 ; xdg-open http://localhost:3000 </dev/null ; } &
+{ sleep 5 ; xdg-open http://localhost:3000 </dev/null ; } &
 
 curl --insecure --silent --no-buffer --output $FIFO \
 "$FRITZBOX_IP/cgi-bin/capture_notimeout?ifaceorminor=$FRITZBOX_INTERFACE&snaplen=&capture=Start&sid=$SID" &
