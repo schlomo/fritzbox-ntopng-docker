@@ -2,11 +2,15 @@
 
 # TODO: https
 
+test -r /etc/fritzbox-internet-ticket.conf && source /etc/fritzbox-internet-ticket.conf
+
+export ${!FRITZBOX_*}
+
 # Fritzbox credentials must be given either via environment variables
 FRITZBOX_PASSWORD="${FRITZBOX_PASSWORD:-$1}"
-FRITZBOX_USER="${FRITZBOX_USER:-$2}"
+FRITZBOX_USERNAME="${FRITZBOX_USERNAME:-$2}"
 # This is the address of the router
-FRITZBOX_NAME=${FRITZBOX_NAME:-fritz.box}
+FRITZBOX_HOST=${FRITZBOX_HOST:-fritz.box}
 
 # Lan Interface is default, otherwise you don't see which host causes the traffic
 FRITZBOX_INTERFACE="${FRITZBOX_INTERFACE:-1-lan}"
@@ -15,7 +19,7 @@ FRITZBOX_IP=( $(getent hosts fritz.box) )
 
 if [ -z "$FRITZBOX_PASSWORD" ] ; then echo "Password empty, please set at least FRITZBOX_PASSWORD environment variable. Usage: $0 [ntopng args ...]" ; exit 1; fi
 
-echo "Trying to login into $FRITZBOX_NAME"
+echo "Trying to login into $FRITZBOX_HOST"
 
 # Request challenge token from Fritz!Box
 CHALLENGE=$(curl --insecure --silent $FRITZBOX_IP/login_sid.lua |  grep -o "<Challenge>[a-z0-9]\{8\}" | cut -d'>' -f 2)
@@ -30,7 +34,7 @@ HASH=$(perl -MPOSIX -e '
   ' -- "$CHALLENGE" "$FRITZBOX_PASSWORD" )
 SID=$(
   curl --insecure --silent "$FRITZBOX_IP/login_sid.lua" -d "response=$CHALLENGE-$HASH" \
-  -d 'username='${FRITZBOX_USER} | grep -o "<SID>[a-z0-9]\{16\}" | cut -d'>' -f 2 )
+  -d 'username='${FRITZBOX_USERNAME} | grep -o "<SID>[a-z0-9]\{16\}" | cut -d'>' -f 2 )
 
 # Check for successfull authentification
 if [[ $SID =~ ^0+$ ]] ; then echo "Login failed. Did you create & use explicit Fritz!Box users?" ; exit 1 ; fi
